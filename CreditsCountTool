@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 import openpyxl
 from openpyxl import load_workbook
-#绩效文件名
-fileSource = "202003.xlsx"
 
-#创建缓存区
+# 绩效文件名
+fileSource = "202003.xlsx"
+# 创建缓存区
 writer = pd.ExcelWriter(fileSource)
 book = load_workbook(fileSource)
 writer.book = book
@@ -15,15 +15,15 @@ writer.book = book
 # excel地址
 
 
-def count(sheet_name,result_sheet_name):
-    #读取sheet
+def count(sheet_name, result_sheet_name):
+    # 读取sheet
     df = pd.DataFrame(pd.read_excel(fileSource, sheet_name=sheet_name))
     date = df.values
-    #创建临时姓名、绩效list
+    # 创建临时姓名、绩效list
     names = []
     credit_list = []
     credit_map = {}
-    #遍历和赋值
+    # 遍历和赋值
     for rows in date:
         if rows[0] == '姓名':
             for name in rows:
@@ -34,15 +34,15 @@ def count(sheet_name,result_sheet_name):
             for credit in rows:
                 # print(credit)
                 credit_list.append(credit)
-    #print(names)
-    #print(credit_list)
-    #建立洗牌后和合计的姓名数据列表
+    # print(names)
+    # print(credit_list)
+    # 建立洗牌后和合计的姓名数据列表
     true_name = []
     true_credits = []
     for index in range(len(names)):
         name = names[index]
         credit = credit_list[index]
-        if type(credit) == int and type(name) != int and not pd.isnull(name) :
+        if type(credit) == int and type(name) != int and not pd.isnull(name):
             if type(credit_map.get(name)) == int and type(name) != int:
                 credit_map[name] = credit_map.get(name) + credit
             else:
@@ -53,14 +53,56 @@ def count(sheet_name,result_sheet_name):
         true_name.append(key)
         true_credits.append(credit_map[key])
 
-    #格式化数据
+    # 格式化数据
     dic = {'姓名': true_name, '合计': true_credits}
     df1 = pd.DataFrame(dic)
-    #写入sheet
-    df1.to_excel(writer, sheet_name=result_sheet_name,index=False)
+    # 写入sheet
+    df1.to_excel(writer, sheet_name=result_sheet_name, index=False)
     writer.save()
+    return credit_map
 
 
-count(sheet_name='项目详情',result_sheet_name='项目统计')
-count(sheet_name='Fu+实施',result_sheet_name='Fu+统计')
-count(sheet_name='数据处理',result_sheet_name='数据统计')
+project_map = count(sheet_name='项目详情', result_sheet_name='项目统计')
+fu_map = count(sheet_name='Fu+实施', result_sheet_name='Fu+统计')
+data_map = count(sheet_name='数据处理', result_sheet_name='数据统计')
+
+for key in project_map.keys():
+    if fu_map.get(key) is not None:
+        sumCredit = project_map.get(key) + fu_map.get(key)
+        project_map[key] = sumCredit
+        del fu_map[key]
+
+    if data_map.get(key) is not None:
+        sumCredit = project_map.get(key) + data_map.get(key)
+        project_map[key] = sumCredit
+        del data_map[key]
+
+for key in fu_map.keys():
+    project_map[key] = fu_map.get(key)
+
+for key in data_map.keys():
+    project_map[key] = data_map.get(key)
+
+print("合计绩效")
+print(project_map)
+
+final_names=[]
+final_credits=[]
+
+for key in project_map.keys():
+    final_names.append(key)
+    final_credits.append(project_map.get(key))
+
+dic = {'姓名': final_names, '合计': final_credits}
+
+df1 = pd.DataFrame(dic)
+df1=df1.sort_values(['合计'], ascending = False)
+# 写入sheet
+df1.to_excel(writer, sheet_name='合计绩效', index=False)
+writer.save()
+
+
+
+
+# pandas处理NaN-参考链接：https://www.jianshu.com/p/41039996d867
+# pandas追加sheet到已有sheet的excel文件会覆盖的问题-参考链接：https://blog.csdn.net/qq_44315987/article/details/104100281
