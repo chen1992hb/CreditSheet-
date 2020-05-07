@@ -5,7 +5,7 @@ import openpyxl
 from openpyxl import load_workbook
 
 # 绩效文件名
-fileSource = "202003.xlsx"
+fileSource = "123453.xlsx"
 # 创建缓存区
 writer = pd.ExcelWriter(fileSource)
 book = load_workbook(fileSource)
@@ -17,7 +17,10 @@ writer.book = book
 
 def count(sheet_name, result_sheet_name):
     # 读取sheet
-    df = pd.DataFrame(pd.read_excel(fileSource, sheet_name=sheet_name))
+    sheet = pd.read_excel(fileSource, sheet_name=sheet_name)
+    if sheet is None:
+        return
+    df = pd.DataFrame(sheet)
     date = df.values
     # 创建临时姓名、绩效list
     names = []
@@ -63,8 +66,9 @@ def count(sheet_name, result_sheet_name):
 
 
 project_map = count(sheet_name='项目详情', result_sheet_name='项目统计')
-fu_map = count(sheet_name='Fu+实施', result_sheet_name='Fu+统计')
-data_map = count(sheet_name='数据处理', result_sheet_name='数据统计')
+fu_map = count(sheet_name='FU+实施', result_sheet_name='Fu+统计')
+data_map = count(sheet_name='数据详情', result_sheet_name='数据统计')
+service_map = count(sheet_name='对接数据', result_sheet_name='对接统计')
 
 for key in project_map.keys():
     if fu_map.get(key) is not None:
@@ -77,17 +81,29 @@ for key in project_map.keys():
         project_map[key] = sumCredit
         del data_map[key]
 
+    if service_map.get(key) is not None:
+        sumCredit = project_map.get(key) + service_map.get(key)
+        project_map[key] = sumCredit
+        del service_map[key]
+
+
+print(fu_map)
+print(data_map)
+print(service_map)
 for key in fu_map.keys():
     project_map[key] = fu_map.get(key)
 
 for key in data_map.keys():
     project_map[key] = data_map.get(key)
 
+for key in service_map.keys():
+    project_map[key] = service_map.get(key)
+
 print("合计绩效")
 print(project_map)
 
-final_names=[]
-final_credits=[]
+final_names = []
+final_credits = []
 
 for key in project_map.keys():
     final_names.append(key)
@@ -96,13 +112,11 @@ for key in project_map.keys():
 dic = {'姓名': final_names, '合计': final_credits}
 
 df1 = pd.DataFrame(dic)
-df1=df1.sort_values(['合计'], ascending = False)
+df1 = df1.sort_values(['合计'], ascending=False)
 # 写入sheet
 df1.to_excel(writer, sheet_name='合计绩效', index=False)
 writer.save()
 
-
-
-
-# pandas处理NaN-参考链接：https://www.jianshu.com/p/41039996d867
-# pandas追加sheet到已有sheet的excel文件会覆盖的问题-参考链接：https://blog.csdn.net/qq_44315987/article/details/104100281
+# pandas处理NaN - 参考链接：https://www.jianshu.com/p/41039996d867
+# pandas追加sheet到已有sheet的excel文件会覆盖的问题 - 参考链接：https://blog.csdn.net/qq_44315987/article/details/104100281
+# pandas排序 - 参考链接：https://www.jianshu.com/p/b2f414c50d0c
