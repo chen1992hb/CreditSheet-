@@ -5,7 +5,7 @@ import openpyxl
 from openpyxl import load_workbook
 
 # 绩效文件名
-fileSource = "123453.xlsx"
+fileSource = "技术部项目奖金分配2007.xlsx"
 # 创建缓存区
 writer = pd.ExcelWriter(fileSource)
 book = load_workbook(fileSource)
@@ -30,15 +30,14 @@ def count(sheet_name, result_sheet_name):
     for rows in date:
         if rows[0] == '姓名':
             for name in rows:
-                # print(name)
                 names.append(name)
 
-        if rows[0] == '核准':
+        if str(rows[0]).strip() == '核准':
             for credit in rows:
                 # print(credit)
                 credit_list.append(credit)
-    # print(names)
-    # print(credit_list)
+    print(names)
+    print(credit_list)
     # 建立洗牌后和合计的姓名数据列表
     true_name = []
     true_credits = []
@@ -86,18 +85,27 @@ for key in project_map.keys():
         project_map[key] = sumCredit
         del service_map[key]
 
-
+print(fu_map)
 print(fu_map)
 print(data_map)
 print(service_map)
 for key in fu_map.keys():
-    project_map[key] = fu_map.get(key)
+    if project_map.get(key) is None:
+        project_map[key] = fu_map.get(key)
+    else:
+        project_map[key] = fu_map.get(key) + project_map[key]
 
 for key in data_map.keys():
-    project_map[key] = data_map.get(key)
+    if project_map.get(key) is None:
+        project_map[key] = data_map.get(key)
+    else:
+        project_map[key] = data_map.get(key) + project_map[key]
 
 for key in service_map.keys():
-    project_map[key] = service_map.get(key)
+    if project_map.get(key) is None:
+        project_map[key] = service_map.get(key)
+    else:
+        project_map[key] = service_map.get(key) + project_map[key]
 
 print("合计绩效")
 print(project_map)

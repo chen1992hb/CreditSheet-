@@ -11,6 +11,8 @@ db_username = 'chenhao'
 db_password = 'urvgycQEVSx1RT2m'
 db_name = 'pmtool'
 report_status = []
+report_manager = []
+dead_line = []
 # 打开数据库连接
 db = pymysql.connect(db_host, db_username, db_password, db_name,
                      charset='utf8')
@@ -28,7 +30,8 @@ def get_days_daily(days_ago):
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
 
-    sql_str = 'SELECT pmtool.p_news.p_id ,p_name,pmtool.p_news.create_time,pmtool.p_news.p_news ,p_status FROM pmtool.pmlist,pmtool.p_news where pmtool.p_news.p_id = pmtool.pmlist.id  and pmtool.p_news.create_time >= ' + '\'' + da_days + '\''
+    sql_str = 'SELECT pmtool.p_news.p_id ,p_name,pmtool.p_news.create_time,pmtool.p_news.p_news ,p_status,p_manager,p_design_time,p_codecomplete_time ,p_archive_time ,p_online_time FROM pmtool.pmlist,pmtool.p_news where pmtool.p_news.p_id = pmtool.pmlist.id  and pmtool.p_news.create_time >= ' + '\'' + da_days + '\''
+    # sql_str = 'SELECT pmtool.p_news.p_id ,p_name,pmtool.p_news.create_time,pmtool.p_news.p_news ,p_status,p_manager FROM pmtool.pmlist,pmtool.p_news where pmtool.p_news.p_id = pmtool.pmlist.id  and pmtool.p_news.create_time and p_status <5 '
 
     print("sql_str=" + sql_str)
 
@@ -66,15 +69,23 @@ def get_project_name(data):
             if rows[4] == 0:
                 report_name.append(name)
                 report_status.append('设计中')
+                report_manager.append(rows[5])
+                dead_line.append(str(rows[6]))
             if rows[4] == 1:
                 report_name.append(name)
                 report_status.append('开发中')
+                report_manager.append(rows[5])
+                dead_line.append(str(rows[7]))
             if rows[4] == 2:
                 report_name.append(name)
                 report_status.append('测试中')
+                report_manager.append(rows[5])
+                dead_line.append(str(rows[8]))
             if rows[4] == 3:
                 report_name.append(name)
                 report_status.append('申请归档')
+                report_manager.append(rows[5])
+                dead_line.append(str(rows[9]))
 
     return report_name
 
@@ -92,13 +103,10 @@ def get_project_status(data):
 def get_daily_excel(days_no):
     data = get_days_daily(days_no);
     project_names = get_project_name(data)
-    dic = {}
-    dic['项目名称'] = project_names
-    dic['项目状态'] = report_status
+    pro_dic = {'项目名称': project_names, '项目状态': report_status, '项目经理': report_manager, '阶段截止日期': dead_line}
     now_time = datetime.datetime.now()
 
     r = range(0, days_no)
-
     for i in r:
         delta_day = datetime.timedelta(days=(i + 1) - days_no)
         da_days = (now_time + delta_day).strftime('%Y-%m-%d')
@@ -107,8 +115,8 @@ def get_daily_excel(days_no):
         one_report = []
         for name in project_names:
             one_report.append(daily_map.get(name))
-        dic[da_days] = one_report
-    return dic
+        pro_dic[da_days] = one_report
+    return pro_dic
 
 
 # 创建缓存区
@@ -116,7 +124,7 @@ writer = pd.ExcelWriter(fileSource)
 
 book = load_workbook(fileSource)
 writer.book = book
-dic = get_daily_excel(5)
+dic = get_daily_excel(60)
 
 print(dic)
 df1 = pd.DataFrame(dic)
