@@ -18,7 +18,7 @@ db_name = 'pmtool'
 db = pymysql.connect(db_host, db_username, db_password, db_name,
                      charset='utf8')
 # 项目列表
-fileSource = "7月第五周人员占用.xlsx"
+fileSource = "9月第2周人员占用.xlsx"
 
 project_list = []
 requirement_list = []
@@ -116,7 +116,8 @@ def get_next_sunday():
     # print(str(today))
     return today
 
-
+#china 0.053
+#American 0.021
 def get_next_month():
     today = datetime.datetime.now()
     first_day = datetime.datetime(today.year, today.month)
@@ -217,14 +218,32 @@ before_online = ' p_status <5 '
 
 pause_query = ' p_status = 7'
 
+#date_str = '\'%Y-%m\''
 date_str = '\'%Y-%m\''
+
 online_query = 'p_real_online_time > date_format(now(),' + date_str + ') and p_status = 5 and p_online_time > date_format(now(),' + date_str + ')'
+
+#online_query = 'p_real_online_time > \'2020-11-00\' and p_status = 5  '
+
 
 project_list = get_projects(before_online)
 
 pause_project = get_projects(pause_query)
 
 online_project = get_projects(online_query)
+
+online_manage_list = []
+
+online_product_list = []
+
+online_ui_list = []
+
+online_develop_list = []
+
+online_design_list = []
+
+online_test_list =[]
+
 
 get_requirements(requirement_list)
 
@@ -263,6 +282,18 @@ for project in online_project:
     online_list.append(
         str(get_level(project)) + ")" + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
             '-产品部', ""))
+    online_manage_list.append(project.p_manager.replace('-技术部', "").replace(
+            '-产品部', ""))
+    online_design_list.append(project.p_technical.replace('-技术部', "").replace(
+            '-产品部', ""))
+    online_develop_list.append(project.p_coder.replace('-技术部', "").replace(
+            '-产品部', ""))
+    online_product_list.append(project.p_productmanager.replace('-技术部', "").replace(
+            '-产品部', ""))
+    online_ui_list.append(project.p_designer.replace('-技术部', "").replace(
+            '-产品部', ""))
+    online_test_list.append(project.p_test.replace('-技术部', "").replace(
+            '-产品部', ""))
 
 requirement_titles_len = len(requirement_titles)
 stand_by_len = len(stand_by)
@@ -272,34 +303,30 @@ test_list_len = len(test_list)
 checking_list_len = len(checking_list)
 pause_list_len = len(pause_list)
 online_list_len = len(online_list)
+online_manage_len = len(online_manage_list)
+online_design_len = len(online_design_list)
+online_develop_len = len(online_develop_list)
+online_product_len = len(online_product_list)
+online_ui_len = len(online_ui_list)
 
 size_list = [requirement_titles_len, stand_by_len, len(designer), len(design_list), len(developer), develop_list_len,
-             len(tester), len(test_list), checking_list_len, pause_list_len, online_list_len]
+             len(tester), len(test_list), checking_list_len, pause_list_len, online_list_len, online_manage_len,
+             online_design_len, online_develop_len, online_product_len, online_ui_len,len(online_test_list)]
 a = np.array(size_list)
 max_len = a.max()
 
 data = [requirement_titles, stand_by, designer, design_list, developer, develop_list,
-        tester, test_list, checking_list, pause_list, online_list]
+        tester, test_list, checking_list, pause_list, online_list, online_manage_list, online_design_list,
+        online_develop_list, online_product_list, online_ui_list,online_test_list]
 
 add_to_max(data, max_len)
-
-print('需求池:' + requirement_titles.__str__())
-print('待立项:' + stand_by.__str__())
-print('设计人员:' + designer.__str__())
-print('设计中:' + design_list.__str__())
-print("开发人员:" + developer.__str__())
-print("开发中：" + develop_list.__str__())
-print("测试人员:" + tester.__str__())
-print("测试中:" + test_list.__str__())
-print("需求验收:" + checking_list.__str__())
-print('暂停：' + pause_list.__str__())
-print('本月上线：' + online_list.__str__())
 
 pro_dic = {'需求池:' + str(requirement_titles_len): requirement_titles, '待立项:' + str(stand_by_len): stand_by,
            '人员安排': designer, '设计中:' + str(design_list_len): design_list, "开发": developer,
            "开发中:" + str(develop_list_len): develop_list, "测试": tester, "测试中:" + str(test_list_len): test_list,
            '需求验收:' + str(checking_list_len): checking_list, "暂停：" + str(pause_list_len): pause_list,
-           "本月上线项目：" + str(online_list_len): online_list}
+           "本月上线项目：" + str(online_list_len): online_list, '项目经理': online_manage_list, '产品经理': online_product_list,
+           '编码': online_develop_list, '技术方案': online_design_list, 'UI': online_ui_list,'test':online_test_list}
 
 # 创建缓存区
 writer = pd.ExcelWriter(fileSource)
@@ -322,6 +349,8 @@ project_member = ['贺攀', '靳坚', '马炬', '徐莎', '董迈克', '余中�
 product_member = ['吴清子', '王学佳', '殷培培', '汪洁', '邹先铎', '朱超', '邓先宇', '董治伟', '陈瑾萱', '张岩', '成幸']
 
 test_member = ['范琴', '王貂', '柳畅宇', '熊彬', '贺文颖', '熊应宏', '甘栋', '万苗']
+
+project_member = ['马哲涛', '常如', '秦辉', '熊彬', '余中伟', '朱超', '邓先宇', '陈浩']
 
 
 def save_member_sheet(member_list: list, sheet_name: str):
@@ -364,6 +393,11 @@ def save_member_sheet(member_list: list, sheet_name: str):
                         '-技术部', "").replace(
                         '-产品部', "") + " " + str(get_deadline(one_project)))
                 member_projects.append('')
+            elif \
+                    one_project.p_manager.__contains__(member):
+                member_projects.append(
+                    str(get_level(
+                        one_project)) + ")" + one_project.p_name + str(get_deadline(one_project)))
         dic[member] = member_projects
     print(dic)
     df1 = pd.DataFrame.from_dict(dic, orient='index')
@@ -372,8 +406,9 @@ def save_member_sheet(member_list: list, sheet_name: str):
     writer.save()
 
 
-#save_member_sheet(client_member, '客户端')
-#save_member_sheet(server_member, '服务端')
-#save_member_sheet(project_member, '项目部')
-save_member_sheet(product_member, '产品部')
-#save_member_sheet(test_member, '测试部')
+# save_member_sheet(client_member, '客户端')
+# save_member_sheet(server_member, '服务端')
+# save_member_sheet(project_member, '项目部')
+# save_member_sheet(product_member, '产品部')
+# save_member_sheet(test_member, '测试部')
+save_member_sheet(project_member, '项目部')

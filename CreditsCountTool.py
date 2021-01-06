@@ -5,16 +5,32 @@ import openpyxl
 from openpyxl import load_workbook
 
 # 绩效文件名
-fileSource = "技术部项目奖金分配2007.xlsx"
+fileSource = "技术部项目奖金分配202012.xlsx"
 # 创建缓存区
 writer = pd.ExcelWriter(fileSource)
 book = load_workbook(fileSource)
 writer.book = book
 
 
+def count_publish(sheet_name):
+    # 读取sheet
+    sheet = pd.read_excel(fileSource, sheet_name=sheet_name)
+    if sheet is None:
+        return
+    df = pd.DataFrame(sheet)
+    date = df.values
+    # 创建临时姓名、绩效list
+    names = []
+    credit_list = []
+    credit_map = {}
+    for rows in date:
+        if not pd.isnull(rows[0]) and not pd.isnull(rows[1]):
+            credit_map[rows[0]] = int(int(rows[1])*0.25)
+
+    return credit_map
+
+
 # excel地址
-
-
 def count(sheet_name, result_sheet_name):
     # 读取sheet
     sheet = pd.read_excel(fileSource, sheet_name=sheet_name)
@@ -30,17 +46,20 @@ def count(sheet_name, result_sheet_name):
     for rows in date:
         if rows[0] == '姓名':
             for name in rows:
-                names.append(name)
+                if not pd.isnull(name):
+                    names.append(name)
 
         if str(rows[0]).strip() == '核准':
             for credit in rows:
-                # print(credit)
-                credit_list.append(credit)
+                if not pd.isnull(credit):
+                    credit_list.append(credit)
     print(names)
     print(credit_list)
     # 建立洗牌后和合计的姓名数据列表
     true_name = []
     true_credits = []
+    print(names.__len__())
+    print(credit_list.__len__())
     for index in range(len(names)):
         name = names[index]
         credit = credit_list[index]
@@ -64,10 +83,12 @@ def count(sheet_name, result_sheet_name):
     return credit_map
 
 
-project_map = count(sheet_name='项目详情', result_sheet_name='项目统计')
-fu_map = count(sheet_name='FU+实施', result_sheet_name='Fu+统计')
-data_map = count(sheet_name='数据详情', result_sheet_name='数据统计')
-service_map = count(sheet_name='对接数据', result_sheet_name='对接统计')
+project_map = count(sheet_name='项目', result_sheet_name='项目统计')
+fu_map = count(sheet_name='FU+', result_sheet_name='Fu+统计')
+data_map = count(sheet_name='数据', result_sheet_name='数据统计')
+service_map = count(sheet_name='对接', result_sheet_name='对接统计')
+publish_map=count_publish(sheet_name='发布绩效')
+
 
 for key in project_map.keys():
     if fu_map.get(key) is not None:
@@ -85,7 +106,12 @@ for key in project_map.keys():
         project_map[key] = sumCredit
         del service_map[key]
 
-print(fu_map)
+
+    if publish_map.get(key) is not None:
+        sumCredit = project_map.get(key) + publish_map.get(key)
+        project_map[key] = sumCredit
+        del publish_map[key]
+
 print(fu_map)
 print(data_map)
 print(service_map)
@@ -106,6 +132,12 @@ for key in service_map.keys():
         project_map[key] = service_map.get(key)
     else:
         project_map[key] = service_map.get(key) + project_map[key]
+
+for key in publish_map.keys():
+    if project_map.get(key) is None:
+        project_map[key] = publish_map.get(key)
+    else:
+        project_map[key] = publish_map.get(key) + project_map[key]
 
 print("合计绩效")
 print(project_map)

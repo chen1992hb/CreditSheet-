@@ -5,7 +5,7 @@ import openpyxl
 from openpyxl import load_workbook
 
 # 绩效文件名
-fileSource = "7月发布记录.xlsx"
+fileSource = "11月发布记录.xlsx"
 # 创建缓存区
 writer = pd.ExcelWriter(fileSource)
 f = pd.ExcelFile(fileSource)
@@ -24,15 +24,15 @@ for i in f.sheet_names:
         tes_name=rows[6]
         if dev_names.get(dev_name) is None:
             if pd.isnull(rows[5]):
-                dev_names[dev_name]= 1
+                dev_names[dev_name]= 0
         if dev_names.get(dev_name) is not None:
             if pd.isnull(rows[5]):
                 dev_names[dev_name]= dev_names.get(dev_name)+1
         if tes_names.get(tes_name) is None:
-            if pd.isnull(rows[8]):
+            if pd.isnull(rows[8])and pd.isnull(rows[9]):
                 tes_names[tes_name]= 1
         if tes_names.get(tes_name) is not None:
-            if pd.isnull(rows[8]):
+            if pd.isnull(rows[8]) and pd.isnull(rows[9]):
                 tes_names[tes_name]= tes_names.get(tes_name)+1
 
 #del dev_names['nan']

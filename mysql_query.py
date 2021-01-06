@@ -25,13 +25,13 @@ def get_days_daily(days_ago):
 
     delta_day = datetime.timedelta(days=-days_ago + 1)
 
-    da_days = (now_time + delta_day).strftime('%Y-%m-%d %000:%000:%000')
+    da_days = (now_time + delta_day).strftime('%Y-%m-%d')
 
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
 
     sql_str = 'SELECT pmtool.p_news.p_id ,p_name,pmtool.p_news.create_time,pmtool.p_news.p_news ,p_status,p_manager,p_design_time,p_codecomplete_time ,p_archive_time ,p_online_time FROM pmtool.pmlist,pmtool.p_news where pmtool.p_news.p_id = pmtool.pmlist.id  and pmtool.p_news.create_time >= ' + '\'' + da_days + '\''
-    # sql_str = 'SELECT pmtool.p_news.p_id ,p_name,pmtool.p_news.create_time,pmtool.p_news.p_news ,p_status,p_manager FROM pmtool.pmlist,pmtool.p_news where pmtool.p_news.p_id = pmtool.pmlist.id  and pmtool.p_news.create_time and p_status <5 '
+    #sql_str = 'SELECT pmtool.p_news.p_id ,p_name,pmtool.p_news.create_time,pmtool.p_news.p_news ,p_status,p_manager FROM pmtool.pmlist,pmtool.p_news where pmtool.p_news.p_id = pmtool.pmlist.id  and pmtool.p_news.create_time and p_status <5 '
 
     print("sql_str=" + sql_str)
 
