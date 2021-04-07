@@ -64,15 +64,17 @@ class Requirement(object):
 
 def get_level(self: Project):
     if self.p_rank == -1:
-        return 'C'
+        return '【C级】'
     if self.p_rank == 0:
-        return 'B'
+        return '【B级】'
     if self.p_rank == 1:
-        return 'A'
+        return '【A级】'
     if self.p_rank == 2:
-        return 'S'
+        return '【S级】'
     if self.p_rank == 3:
-        return 'SS'
+        return '【SS级】'
+    if self.p_rank is None:
+        return ' '
 
 
 def get_status(self: Project):
@@ -221,9 +223,9 @@ pause_query = ' p_status = 7'
 #date_str = '\'%Y-%m\''
 date_str = '\'%Y-%m\''
 
-online_query = 'p_real_online_time > date_format(now(),' + date_str + ') and p_status = 5 and p_online_time > date_format(now(),' + date_str + ')'
+#online_query = 'p_real_online_time > date_format(now(),' + date_str + ') and p_status = 5 and p_online_time > date_format(now(),' + date_str + ')'
 
-#online_query = 'p_real_online_time > \'2020-11-00\' and p_status = 5  '
+online_query = 'p_real_online_time < \'2021-04-01\' and p_status = 5 and p_real_online_time > \'2021-03-01\' '
 
 
 project_list = get_projects(before_online)
@@ -256,31 +258,31 @@ for requirement in requirement_list:
 for project in project_list:
     if project.p_status == 0:
         design_list.append(
-            str(get_level(project)) + ")" + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
+            str(get_level(project))+ project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
                 '-产品部', "") + " " + str(get_deadline(project)))
         developer.append(get_member(project, 1))
     if project.p_status == 1:
         develop_list.append(
-            str(get_level(project)) + ")" + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
+            str(get_level(project))+ project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
                 '-产品部', "") + " " + str(get_deadline(project)))
         tester.append(get_member(project, 2))
     if project.p_status == 2:
         test_list.append(
-            str(get_level(project)) + ")" + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
+            str(get_level(project)) + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
                 '-产品部', "") + " " + str(get_deadline(project)))
     if project.p_status == 3:
         checking_list.append(
-            str(get_level(project)) + ")" + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
+            str(get_level(project))+ project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
                 '-产品部', "") + " " + str(get_deadline(project)))
 
 for project in pause_project:
     pause_list.append(
-        str(get_level(project)) + ")" + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
+        str(get_level(project))  + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
             '-产品部', ""))
 
 for project in online_project:
     online_list.append(
-        str(get_level(project)) + ")" + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
+        str(get_level(project)) + project.p_name + "\r\n" + project.p_manager.replace('-技术部', "").replace(
             '-产品部', ""))
     online_manage_list.append(project.p_manager.replace('-技术部', "").replace(
             '-产品部', ""))
@@ -350,7 +352,7 @@ product_member = ['吴清子', '王学佳', '殷培培', '汪洁', '邹先铎', 
 
 test_member = ['范琴', '王貂', '柳畅宇', '熊彬', '贺文颖', '熊应宏', '甘栋', '万苗']
 
-project_member = ['马哲涛', '常如', '秦辉', '熊彬', '余中伟', '朱超', '邓先宇', '陈浩']
+project_member = ['马哲涛', '常如', '秦辉', '熊彬', '余中伟', '朱超', '邓先宇', '陈浩','张丰']
 
 
 def save_member_sheet(member_list: list, sheet_name: str):
